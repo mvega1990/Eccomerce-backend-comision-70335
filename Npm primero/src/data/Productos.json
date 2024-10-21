@@ -1,0 +1,31 @@
+[
+     {
+          "id": 1,
+          "title": "Destornillador",
+          "description": "destornilladores",
+          "price": 2000,
+          "thumbnail": "dadada.jpg",
+          "code": "code2009",
+          "stock": 50
+     }
+     ,   {
+          "id": 2,
+          "title": "Martillo",
+          "description": "Martillo grande",
+          "price": 5000,
+          "thumbnail": "blabla.jpg",
+          "code": "code2010",
+          "stock": 30
+     }
+     ,   {
+          "id": 3,
+          "title": "Pinza",
+          "description": "pinza de puntas",
+          "price": 1200,
+          "thumbnail": "plada.jpg",
+          "code": "code2011",
+          "stock": 10
+     }
+    
+     
+]
