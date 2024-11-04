@@ -1,0 +1,17 @@
+<h2>Listado de productos en tiempo real</h2>
+
+
+<form action="/api/products" method="post">
+    <input type="text" id="nombre" name= "title" placeholder="Nombre del producto" />
+    <input type="number" id="precio" placeholder="Precio del producto"/>
+    <input type="text" id="code" name="code" placeholder="codigo"/>
+    <button type="submit">Crear Producto</button>
+</form>
+
+
+<ul id="lista-productos">
+
+</ul>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/JS/realTimeProducts.js"></script>

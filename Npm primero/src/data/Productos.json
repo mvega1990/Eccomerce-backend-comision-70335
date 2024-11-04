@@ -7,8 +7,8 @@
           "thumbnail": "dadada.jpg",
           "code": "code2009",
           "stock": 50
-     }
-     ,   {
+     },
+     {
           "id": 2,
           "title": "Martillo",
           "description": "Martillo grande",
@@ -16,8 +16,8 @@
           "thumbnail": "blabla.jpg",
           "code": "code2010",
           "stock": 30
-     }
-     ,   {
+     },
+     {
           "id": 3,
           "title": "Pinza",
           "description": "pinza de puntas",
@@ -25,7 +25,19 @@
           "thumbnail": "plada.jpg",
           "code": "code2011",
           "stock": 10
+     },
+     {
+          "id": 4,
+          "title": "tijera"
+     },
+     {
+          "id": 5,
+          "title": "caladora",
+          "code": "code2050"
+     },
+     {
+          "id": 6,
+          "title": "amoladora",
+          "code": "code7070"
      }
-    
-     
 ]
