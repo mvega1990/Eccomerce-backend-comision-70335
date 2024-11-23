@@ -5,6 +5,8 @@ import { router as vistasRouter} from "./routes/vistasRouter.js";
 import{engine} from "express-handlebars"
 import {Server} from "socket.io"
 import { setupDeleteListener } from "./routes/productosRouter.js";
+import { conectaDB } from "./connDB.js";
+import { config } from "./Config/config.js";
 
 const PORT = 8080;
 const app = express();
@@ -30,3 +32,5 @@ setupDeleteListener(io)
 io.on("connection", socket =>{
   console.log("se conecto nuevo cliente ")
 })
+
+conectaDB(config.MONGO_URL, config.DB_NAME) 

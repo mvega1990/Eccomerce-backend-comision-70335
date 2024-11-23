@@ -1,44 +1,60 @@
 import { Router } from "express";
 import { procesoErrores } from "../utils.js";
-import ProductManager from "../dao/ProductsManager.js";
 
+import { ProductMongoManager as productManager } from "../dao/ProductsMongoManager.js";
+import { isValidObjectId } from "mongoose";
 
-const productManager = new ProductManager("./src/data/Productos.json");
 export const router = Router();
 
 router.get("/", async (req, res) => {
+  let { page, limit, sort, category, inStock } = req.query;
+
+  let sortOption = {};
+  if (sort === "asc") {
+    sortOption = { price: 1 };
+  } else if (sort === "desc") {
+    sortOption = { price: -1 };
+  }
+
   try {
-    let { limit } = req.query;
-    let productos = await productManager.getProducts();
+    let productos = await productManager.getProducts(
+      page,
+      limit,
+      sortOption,
+      category,
+      inStock
+    );
 
-    if (!limit) {
-      limit = productos.length;
-    } else {
-      limit = Number(limit);
-
-      if (isNaN(limit)) {
-        return res.status(400).send(`Error: el limit debe ser numérico`);
-      }
-    }
-
-    let productosLimitados = productos.slice(0, limit);
+    const response = {
+      status: "success",
+      payload: productos.docs,
+      totalPages: productos.totalPages,
+      prevPage: productos.prevPage,
+      nextPage: productos.nextPage,
+      page: productos.page,
+      hasPrevPage: productos.hasPrevPage,
+      hasNextPage: productos.hasNextPage,
+      prevLink: productos.hasPrevPage
+        ? `/products?page=${productos.prevPage}`
+        : null,
+      nextLink: productos.hasNextPage
+        ? `/products?page=${productos.nextPage}`
+        : null,
+    };
 
     res.setHeader("Content-Type", "application/json");
-    return res.status(200).json({ productos: productosLimitados });
+    return res.status(200).json(response);
   } catch (error) {
+    console.error("Error al obtener productos:", error);
     procesoErrores(res, error);
   }
 });
 
 router.get("/:id", async (req, res) => {
   let { id } = req.params;
-  id = Number(id);
-
-  console.log(`ID recibido: ${id}`);
-
-  if (isNaN(id)) {
+  if (!isValidObjectId(id)) {
     res.setHeader("Content-Type", "application/json");
-    return res.status(400).json({ error: `el id debe ser numerico` });
+    return res.status(400).json({ error: `Indique un ID valido de MongoDB` });
   }
 
   try {
@@ -83,7 +99,7 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const newProduct = await productManager.addProduct(
+    const newProduct = await productManager.addProduct({
       title,
       description,
       price,
@@ -91,10 +107,10 @@ router.post("/", async (req, res) => {
       code,
       stock,
       status,
-      category
-    );
+      category,
+    });
     const io = req.app.get("io");
-    io.emit("newProduct", newProduct)
+    io.emit("newProduct", newProduct);
 
     res.setHeader("Content-Type", "application/json");
     return res.status(201).json({ newProduct });
@@ -103,31 +119,37 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 router.put("/:id", async (req, res) => {
   let { id } = req.params;
-  id = Number(id);
-  if (isNaN(id)) {
+
+  if (!isValidObjectId(id)) {
     res.setHeader("Content-Type", "application/json");
-    return res.status(400).json({ error: "El id debe ser numérico" });
+    return res.status(400).json({ error: `Indique un ID valido de MongoDB` });
   }
 
-  let modificaciones = req.body;
-  if (modificaciones.id) {
+  let { ...aModificar } = req.body;
+  let cantProsModificar = Object.keys(aModificar).lenght;
+  if (cantProsModificar === 0) {
     res.setHeader("Content-Type", "application/json");
-    return res.status(400).json({ error: "No se puede modificar el id" });
+    return res.status(400).json({ error: "No se han ingresado propiedades" });
   }
 
   try {
-    // Intentamos modificar el producto usando modificaProducto
-    let productoModificado = await productManager.modificaProducto(id, modificaciones);
+    let productoModificado = await productManager.modificaProducto(
+      id,
+      aModificar
+    );
 
     res.setHeader("Content-Type", "application/json");
-    return res.status(200).json({ message: "Producto modificado con éxito", productoModificado });
+    return res
+      .status(200)
+      .json({ message: "Producto modificado con éxito", productoModificado });
   } catch (error) {
-    if (error.message.includes('not found')) {
+    if (error.message.includes("not found")) {
       res.setHeader("Content-Type", "application/json");
-      return res.status(404).json({ error: `No se encontró producto con el id ${id}` });
+      return res
+        .status(404)
+        .json({ error: `No se encontró producto con el id ${id}` });
     }
 
     console.error(error);
@@ -135,41 +157,30 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-
 router.delete("/:id", async (req, res) => {
   let { id } = req.params;
-  id = Number(id); 
-  console.log("ID recibido para eliminar:", id);
 
-  if (isNaN(id)) {
+  if (!isValidObjectId) {
     res.setHeader("Content-Type", "application/json");
-    return res.status(400).json({ error: `El id debe ser numérico` });
+    return res.status(400).json({ error: `El Id no es valido` });
   }
 
   try {
-    let producto = await productManager.getProductById(id);
-    if (!producto) {
-      res.setHeader("Content-Type", "application/json");
-      return res.status(404).json({ error: `No existe producto con id ${id} en DB` });
-    }
-
-  
     let productoEliminado = await productManager.eliminaProducto(id);
-    
-   
-    const io = req.app.get("io");
-
-
-    io.emit("deleteProduct", id); 
-    console.log(`Producto con ID ${id} eliminado y emitido a clientes`);
-
     res.setHeader("Content-Type", "application/json");
     return res.status(200).json({ productoEliminado });
   } catch (error) {
     procesoErrores(res, error);
   }
-});
 
+  const io = req.app.get("io");
+
+  io.emit("deleteProduct", id);
+  console.log(`Producto con ID ${id} eliminado y emitido a clientes`);
+
+  res.setHeader("Content-Type", "application/json");
+  return res.status(200).json({ productoEliminado });
+});
 
 const setupDeleteListener = (io) => {
   io.on("connection", (socket) => {
@@ -180,7 +191,7 @@ const setupDeleteListener = (io) => {
         let producto = await productManager.getProductById(id);
         if (producto) {
           await productManager.eliminaProducto(id);
-          io.emit("deleteProduct", id); 
+          io.emit("deleteProduct", id);
           console.log(`Producto con ID ${id} eliminado mediante Socket.IO`);
         } else {
           console.log(`Producto con ID ${id} no encontrado`);

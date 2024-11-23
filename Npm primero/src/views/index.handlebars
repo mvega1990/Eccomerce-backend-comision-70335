@@ -1,6 +1,28 @@
 <h2>Listado de productos</h2>
-<ul>
+<span id="idCart" hidden>{{cart._id}}</span>
+<ul id="productos">
   {{#each productos}}
-    <li>{{this.title}}</li>
+    <li>
+      {{this.title}}  {{this.code}} 
+      <button onclick="agregarCarrito('{{this._id}}')">Agregar</button>
+    </li>
   {{/each}}
 </ul>
+
+<br>
+<a href="/products?page=1">Pág.1</a>
+
+{{#if hasPrevPage}}
+  <a href="/products?page={{prevPage}}">Pág.Prev.</a>
+{{else}}
+  <a href="/products?page={{prevPage}}" class="disabled">Pág.Prev.</a>
+{{/if}}
+
+{{#if hasNextPage}}
+  <a href="/products?page={{nextPage}}">Pág.Sig.</a>
+{{else}}
+  <a href="/products?page={{nextPage}}" class="disabled">Pág.Sig.</a>
+{{/if}}
+
+<a href="/products?page={{totalPages}}">Ult.Pág</a>
+<script src="/JS/productos.js"></script>

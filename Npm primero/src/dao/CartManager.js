@@ -31,7 +31,7 @@ class CartManager {
   }
 
   async addProductToCart(cid, pid) {
-    const carts = await this.getCarts();
+    const carts = await this.getCarts(); 
     const cartIndex = carts.findIndex((cart) => cart.id === Number(cid));
 
     if (cartIndex === -1) {
